@@ -1,9 +1,20 @@
-const sum = require('./main');
+const isPrime = require('./main');
 
-test('adds 1 + 2 to equal 3', () => {
-  expect(sum(1, 2)).toBe(3);
-});
-
-test('adds 1 + 3 is not equal 3', () => {
-  expect(sum(1, 3)).not.toBe(3);
-});
+describe('IsPrime test function', () => {
+  test('prime numbers return true', () => {
+    expect(isPrime(2)).toBe(true);
+    expect(isPrime(3)).toBe(true);
+    expect(isPrime(53)).toBe(true);
+    expect(isPrime(67)).toBe(true);
+    expect(isPrime(89)).toBe(true);
+    expect(isPrime(97)).toBe(true);
+  });
+  
+  test('non-prime numbers return false', () => {
+    expect(isPrime(1)).toBe(false);
+    expect(isPrime(27)).toBe(false);
+    expect(isPrime(52)).toBe(false);
+    expect(isPrime(62)).toBe(false);
+    expect(isPrime(72)).toBe(false);
+  });
+})
