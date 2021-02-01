@@ -88,6 +88,94 @@ Done in 13.86s.
 
 > **Testes de integração** buscam **erros de relacionamentos** entre quaisquer módulos de um software, incluindo **desde de integrações pequenas até a integração de bibliotecas** das quais um sistema depende, servidores e gerenciadores de bancos de dados.
 
+![](./.github/integration-test.jpg)
+
+**EXEMPLO**
+
+Neste _exemplo_ foi feito uma API simples com apenas uma rota. Essa rota tem o papel de verificar se um número que é passado na URL é um número primo. Para isso ele utiliza um módulo externo que faz essa checagem. O teste vai verificar se a rota está retornando corretamente. Foi utilizado a biblioteca _Supertest_, que busca fornecer uma abstração de alto nível para testar HTTP.
+
+`main.js`
+
+```js
+const Koa = require("koa");
+const Router = require("koa-router");
+
+const isPrime = require("./isPrime.js");
+
+const app = new Koa();
+const router = new Router();
+
+router.get("/isPrime/:number", (ctx, next) => {
+  const numberIsPrime = isPrime(ctx.params.number);
+  ctx.body = numberIsPrime;
+});
+
+app.use(router.routes()).use(router.allowedMethods());
+
+const server = app.listen(3000);
+
+module.exports = server;
+```
+
+`isPrime.js`
+
+```js
+function isPrime(number) {
+  for (let count = 2; count < number; count++) {
+    if (number % count === 0) {
+      return false;
+    }
+  }
+  return number > 1;
+}
+
+module.exports = isPrime;
+```
+
+`main.test.js`
+
+```js
+const request = require("supertest");
+const server = require("./main");
+
+// Depois de finalizar o teste, fecha o server
+afterAll(() => {
+  server.close();
+});
+
+describe("GET /isPrime/:number", () => {
+  test("Testing return true with prime number", async () => {
+    const response = await request(server).get("/isPrime/53");
+    expect(response.status).toEqual(200);
+    expect(response.text).toContain("true");
+  });
+
+  test("Testing return true with non-prime number", async () => {
+    const response = await request(server).get("/isPrime/52");
+    expect(response.status).toEqual(200);
+    expect(response.text).toContain("false");
+  });
+});
+```
+
+`yarn test`
+
+```bash
+yarn run v1.22.4
+$ jest
+ PASS  ./main.test.js
+  GET /isPrime/:number
+    √ Testing return true with prime number (32 ms)
+    √ Testing return true with non-prime number (3 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        2.801 s
+Ran all test suites.
+Done in 4.96s.
+```
+
 ## **>\_ TESTE DE ACEITAÇÃO**
 
 > Também conhecido como **teste funcional** ou de **história de usuário**, são testes de **correção** e **validação**. Eles são idealmente especificados por clientes ou usuários finais do sistema para verificar se um módulo funciona como foi especificado. Por isso o termo “aceitação”, pois ele verifica se o cliente aceita as funcionalidades que foram implementadas.
